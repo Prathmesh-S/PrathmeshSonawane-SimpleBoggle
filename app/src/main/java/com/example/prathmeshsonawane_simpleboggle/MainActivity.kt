@@ -12,6 +12,15 @@ import kotlin.math.pow
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.game_container)
+        setContentView(R.layout.activity_main)
+
+        //Populate the two fragments
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction().apply {
+                replace(R.id.gameContainer, GameFragment() )
+                replace(R.id.scoreContainer, ScoreFragment())
+                commit()
+            }
+        }
     }
 }
