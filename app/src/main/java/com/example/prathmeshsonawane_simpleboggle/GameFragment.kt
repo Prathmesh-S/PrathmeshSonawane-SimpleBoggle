@@ -40,6 +40,15 @@ class GameFragment : Fragment() {
     private var lastIndex = ""
     private var score = 0
     private lateinit var dictionary :Set<String>
+    private var scoreUpdateListener: OnScoreUpdateListener? = null
+
+    interface OnScoreUpdateListener {
+        fun onScoreUpdate(score: Int)
+    }
+
+    fun setOnScoreUpdateListener(listener: OnScoreUpdateListener) {
+        scoreUpdateListener = listener
+    }
 
     @SuppressLint("DiscouragedApi")
     override fun onCreateView(
@@ -142,12 +151,12 @@ class GameFragment : Fragment() {
         }
 
         //Used For Testing
-        var newlistOfLetter = arrayListOf<String>("T","I", "R", "E","E", "F", "G", "S","I", "J", "K", "L", "M", "N", "O","P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
+        //var newlistOfLetter = arrayListOf<String>("A","B", "U", "S","E", "F", "G", "E","I", "J", "K", "L", "M", "N", "O","P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
 
         //Assign buttons their values
         for (button in allButtons) {
-            //val letter = listOfLetter.random()
-            val letter = newlistOfLetter.removeAt(0)
+            val letter = listOfLetter.random()
+            //val letter = newlistOfLetter.removeAt(0)
             button.text = letter
             listOfLetter = listOfLetter - letter
         }
@@ -161,6 +170,20 @@ class GameFragment : Fragment() {
         for (button in allButtons) {
             button.isEnabled = true
         }
+    }
+
+    //Restart Everything!
+    fun restart() {
+        editText.setText("")
+        currentWord = ""
+        lastIndex = ""
+        listOfWords = mutableListOf<String>()
+        score = 0
+
+        for (button in allButtons) {
+            button.isEnabled = true
+        }
+        initButtons(allButtons)
     }
 
     private fun getScore() {
@@ -178,36 +201,43 @@ class GameFragment : Fragment() {
         }
 
         if (countVowels <2) {
-            Toast.makeText(context, "This word has less than two vowels! 10 Points have been deducted!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "This word has less than two vowels! 10 Points have been deducted if possible!", Toast.LENGTH_SHORT).show()
             score -= 10
             if (score < 0) {
                 score = 0
             }
+            clearAllButtons(allButtons)
+            scoreUpdateListener?.onScoreUpdate(score)
             return
         }
 
         //Check to see if word has already been claimed.
         if (word in listOfWords) {
             Toast.makeText(context, "You already chose this word before!", Toast.LENGTH_SHORT).show()
+            clearAllButtons(allButtons)
             return
         }
 
         //Check if word is at least 4 char long
         if (word.length <4) {
-            Toast.makeText(context, "This word is not long enough! 10 Points have been deducted!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "This word is not long enough! 10 Points have been deducted if possible!", Toast.LENGTH_SHORT).show()
             score -= 10
             if (score < 0) {
                 score = 0
             }
+            clearAllButtons(allButtons)
+            scoreUpdateListener?.onScoreUpdate(score)
             return
         }
         //Check if word is real
         if (word !in dictionary) {
-            Toast.makeText(context, "This is not a word! 10 Points have been deducted!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "This is not a word! 10 Points have been deducted if possible!", Toast.LENGTH_SHORT).show()
             score -= 10
             if (score < 0) {
                 score = 0
             }
+            clearAllButtons(allButtons)
+            scoreUpdateListener?.onScoreUpdate(score)
             return
         }
 
@@ -227,6 +257,7 @@ class GameFragment : Fragment() {
         Toast.makeText(context, "Great Job! You got $tempScore points!", Toast.LENGTH_SHORT).show()
         score +=tempScore
         clearAllButtons(allButtons)
+        scoreUpdateListener?.onScoreUpdate(score)
     }
 
     private fun loadDictionary() : Set<String> {
