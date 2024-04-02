@@ -83,7 +83,6 @@ class GameFragment : Fragment() {
             getScore()
         }
 
-
         //Return view so that fragment can be inflated
         return view
     }
@@ -142,9 +141,13 @@ class GameFragment : Fragment() {
             listOfConsonants = listOfConsonants - letter
         }
 
+        //Used For Testing
+        var newlistOfLetter = arrayListOf<String>("T","I", "R", "E","E", "F", "G", "S","I", "J", "K", "L", "M", "N", "O","P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
+
         //Assign buttons their values
         for (button in allButtons) {
-            val letter = listOfLetter.random()
+            //val letter = listOfLetter.random()
+            val letter = newlistOfLetter.removeAt(0)
             button.text = letter
             listOfLetter = listOfLetter - letter
         }
@@ -161,8 +164,69 @@ class GameFragment : Fragment() {
     }
 
     private fun getScore() {
-        var word = currentWord
+        val word = currentWord
+        var tempScore = 0
+        val listOfVowels = setOf<String>("A", "E", "I", "O", "U")
+        var listOfConsonants = setOf<String>("A","B", "C", "D","E", "F", "G", "H","I", "J", "K", "L", "M", "N", "O","P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
 
+        //Min 2 vowels
+        var countVowels = 0
+        for (char in word) {
+            if (listOfVowels.contains(char.toString())) {
+                countVowels++
+            }
+        }
+
+        if (countVowels <2) {
+            Toast.makeText(context, "This word has less than two vowels! 10 Points have been deducted!", Toast.LENGTH_SHORT).show()
+            score -= 10
+            if (score < 0) {
+                score = 0
+            }
+            return
+        }
+
+        //Check to see if word has already been claimed.
+        if (word in listOfWords) {
+            Toast.makeText(context, "You already chose this word before!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        //Check if word is at least 4 char long
+        if (word.length <4) {
+            Toast.makeText(context, "This word is not long enough! 10 Points have been deducted!", Toast.LENGTH_SHORT).show()
+            score -= 10
+            if (score < 0) {
+                score = 0
+            }
+            return
+        }
+        //Check if word is real
+        if (word !in dictionary) {
+            Toast.makeText(context, "This is not a word! 10 Points have been deducted!", Toast.LENGTH_SHORT).show()
+            score -= 10
+            if (score < 0) {
+                score = 0
+            }
+            return
+        }
+
+        //Calculate Points
+        tempScore += (5 * countVowels)
+        tempScore += (word.length - countVowels)
+        val specialChar = setOf('S', 'Z', 'P', 'X', 'Q')
+
+        for (char in word) {
+            if (specialChar.contains(char)) {
+                tempScore *= 2
+            }
+        }
+
+        //At this point, the word is valid and a score has been calculated.
+        listOfWords.add(word)
+        Toast.makeText(context, "Great Job! You got $tempScore points!", Toast.LENGTH_SHORT).show()
+        score +=tempScore
+        clearAllButtons(allButtons)
     }
 
     private fun loadDictionary() : Set<String> {
